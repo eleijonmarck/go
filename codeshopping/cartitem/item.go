@@ -1,7 +1,7 @@
-package item
+package cartitem
 
-// Item is a item inside of a cart
-type Item struct {
+// CartItem is a item inside of a cart
+type CartItem struct {
 	ID         string                 `json:"id"`
 	Name       string                 `json:"name"`
 	Price      float64                `json:"price"`

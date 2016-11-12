@@ -1,5 +1,9 @@
 package cart
 
+import (
+	"github.com/eleijonmarck/codeshopping/item"
+)
+
 type Cart struct {
 	items   map[string]*CartItem
 	storage CartBucket
