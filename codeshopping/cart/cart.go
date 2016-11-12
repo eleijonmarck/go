@@ -11,6 +11,7 @@ type Cart struct {
 
 type mutator func(*CartItem)
 
+// Boot creates the cart and restores the items of it is in cache "bigTODO"
 func Boot(storage CartBucket) (*Cart, error) {
 	restored, err := storage.Restore()
 
