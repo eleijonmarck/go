@@ -1,7 +1,7 @@
 package cart
 
 import (
-	"github.com/eleijonmarck/codeshopping/item"
+	"github.com/eleijonmarck/codeshopping/cartitem"
 )
 
 type Cart struct {

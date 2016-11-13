@@ -6,6 +6,8 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strconv"
+
+	"github.com/garyburd/redigo/redis"
 )
 
 type Page struct {
@@ -68,7 +70,23 @@ func buyHandler(w http.ResponseWriter, r *http.Request) {
 	t.Execute(w, i)
 }
 
+const (
+	defaultPort        = "8080"
+	defaultRedisDBUrl  = "127.0.0.1"
+	defaultRedisDBPort = "6379"
+	defaultDBName      = "codeshoppingDB"
+)
+
 func main() {
+
+	c, err := redis.Dial("tcp", ":"+defaultRedisDBPort)
+	if err != nil {
+		// handle error
+	}
+	defer c.Close()
+	r, err := redis.Conn.Do(c, "SET", "key", "value")
+	fmt.Println(r)
+
 	fmt.Println("running the server")
 	http.HandleFunc("/products", productHandler)
 	http.HandleFunc("/buy", buyHandler)
