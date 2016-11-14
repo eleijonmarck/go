@@ -5,8 +5,10 @@ import (
 )
 
 type cartRepository struct {
-	db string
-	session *redigo.Session
+	db   string
+	conn *redis.Conn
 }
 
-}
+//func (r *cartRepository) Store(cart *cart.Cart) error {
+//	conn := r.conn.Do("SET", cart.Cart.
+//}

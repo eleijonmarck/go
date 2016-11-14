@@ -63,13 +63,6 @@ func productHandler(w http.ResponseWriter, r *http.Request) {
 	t.Execute(w, p)
 }
 
-func buyHandler(w http.ResponseWriter, r *http.Request) {
-	title := r.URL.Path[len("/buy/"):]
-	i, _ := loadproduct(title)
-	t, _ := template.ParseFiles("buy.html")
-	t.Execute(w, i)
-}
-
 const (
 	defaultPort        = "8080"
 	defaultRedisDBUrl  = "127.0.0.1"
@@ -79,17 +72,13 @@ const (
 
 func main() {
 
-	c, err := redis.Dial("tcp", ":"+defaultRedisDBPort)
-	if err != nil {
-		// handle error
-	}
-	defer c.Close()
-	r, err := redis.Conn.Do(c, "SET", "key", "value")
-	fmt.Println(r)
+	// Setup repositories
+	var (
+		carts cart.Respository
+	)
 
 	fmt.Println("running the server")
 	http.HandleFunc("/products", productHandler)
-	http.HandleFunc("/buy", buyHandler)
 	// http.HandleFunc("/", http.HandlerFunc(indexHandler))
 	http.ListenAndServe(":8080", nil)
 	// http.ListenAndServe(":8080", nil)
