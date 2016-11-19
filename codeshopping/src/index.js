@@ -12,9 +12,9 @@
 //         return 1;
 //     }
 // }
-require('../-!bootstrap-webpack!./bootstrap.config.js')
 const name = ['swedish', 'moscow', 'texas', 'picachu'];
 const imgs = ['https://forum.golangbridge.org/uploads/default/original/2X/2/22304e0805368a2114fefbde7963bd750b97e950.png', 'http://photos3.meetupstatic.com/photos/event/a/0/2/highres_268082562.jpeg', 'http://photos3.meetupstatic.com/photos/event/9/7/d/6/600_434678870.jpeg', 'https://pbs.twimg.com/media/CnRZy5yXgAAgcD_.jpg'];
+const imgs = ['swedish', 'moscow', 'texas', 'picachu'];
 
 const price = [8, 8, 9, 10];
 const sides = ['front', 'back'];
@@ -32,6 +32,8 @@ for (let i = 0; i < imgs.length; i += 1) {
 }
 
 console.log(codes);
+
+// TODO: make a ajaxcall to the webapi to get the items
 
 for (let i = 0; i < imgs.length; i += 1) {
   // TODO: make html of the items
@@ -66,12 +68,6 @@ for (let i = 0; i < imgs.length; i += 1) {
   tButton.className = 'btn btn-primary btn-lg';
   tButton.innerHTML = 'Buy Now';
   tButton.style.color = 'blue';
-  tButton.onclick = 'addToCart('.concat(codes[i].name).concat(')');
+  tButton.setAttribute('onclick', 'alert(\'hello\');');
   tContainer.appendChild(tButton);
 }
-
-function addToCart(codeItem) {
-  document.getElementById(codeItem.name).style.visibility = 'hidden';
-}
-
-addToCart(0);
