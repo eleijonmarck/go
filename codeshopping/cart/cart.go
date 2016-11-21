@@ -1,38 +1,13 @@
 package cart
 
 import (
-	"github.com/garyburd/redigo/redis"
+	"github.com/pborman/uuid"
 )
-
-type cartRespository struct {
-	db   string
-	conn *redis.Conn
-}
-
-type Repository struct {
-	Store(cart *Cart) error
-	Find(id ID) (*Cart, error)
-	AddItem(id string, item *CartItem) error
-}
-
 
 // Cart is a collection of the items and how to store it
 type Cart struct {
-	items   map[string]*CartItem
-	storage cartRespository
-}
-
-type mutator func(*CartItem)
-
-// NewCartRespository returns a new instance of a redis cargo respository
-func NewCartRespository(db string, conn *redis.Conn) (cartRespository, error) {
-
-	r := &cartRespository{
-		db:   db,
-		conn: conn,
-	}
-
-	return r, nil
+	Items map[string]*CartItem
+	CartID    string
 }
 
 // Add will add and item to the cart
@@ -64,7 +39,7 @@ func (c *Cart) Remove(id string) bool {
 
 // IsEmpty checks if there is no items in the cart
 func (c *Cart) IsEmpty() bool {
-	if (len(c.items)) > 0 {
+	if (len(c.Items)) > 0 {
 		return false
 	}
 	return true
@@ -72,18 +47,25 @@ func (c *Cart) IsEmpty() bool {
 
 // GetContent for mutator approaches
 func (c *Cart) GetContent() map[string]*CartItem {
-	return c.items
+	return c.Items
 }
 
-// EachItem mutates each item in the bucket as the mutator passed to the
-// method
-func (c *Cart) EachItem(callback mutator) {
-
-	for _, item := range c.items {
-
-		// Execute mutator passed to Each method
-		callback(item)
+func New(id string) *Cart {
+	return &Cart {
+		CartId : id,
+		Items : []map[string]*CartItem,
 	}
+}
 
-	c.storage.Save(c.items)
+// NextTrackingID generates a new tracking ID.
+// TODO: Move to infrastructure(?)
+func NewCartID() string {
+	return strings.Split(strings.ToUpper(uuid.New()), "-")[0]
+}
+
+// Repository provides access to a cart storage
+type Repository interface {
+	Store(cart *Cart) error
+	Find(id string) (*Cart, error)
+	FindAll() []*CartItem
 }

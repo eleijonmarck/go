@@ -1,9 +1,9 @@
 package main
 
 import (
-	"fmt"
 	"html/template"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -73,13 +73,21 @@ const (
 func main() {
 
 	// Setup repositories
-	var (
-		carts cart.Respository
-	)
+	// var (
+	// 	carts cart.Respository
+	// )
+	conn, err := redis.DialURL(defaultRedisDBUrl)
+	if err != nil {
+		// handle connection error
+	}
+	defer conn.Close()
 
-	fmt.Println("running the server")
-	http.HandleFunc("/products", productHandler)
-	// http.HandleFunc("/", http.HandlerFunc(indexHandler))
-	http.ListenAndServe(":8080", nil)
-	// http.ListenAndServe(":8080", nil)
+	// creates a http.ServeMux, used to register handlers to execute in
+	// response to routes
+	mux := http.NewServeMux()
+
+	// get the items of the database
+	mux.Handle("/products", handlers.GetAllItems(conn))
+
+	http.ListenAndServe(":8080", mux)
 }
