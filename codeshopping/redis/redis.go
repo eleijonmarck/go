@@ -1,6 +1,7 @@
 package redis
 
 import (
+	"encoding/json"
 	"errors"
 	"github.com/eleijonmarck/codeshopping/cart"
 	"github.com/garyburd/redigo/redis"
@@ -11,12 +12,14 @@ type cartRepository struct {
 	conn *redis.Conn
 }
 
-type RedisConnection struct {
-	conn *redis.Conn
-}
-
 func (r *cartRepository) Store(cart *cart.Cart) error {
 
+	serialized, err := json.Marshal(&cart)
+	if err != nil {
+		// error handle
+	}
+	r.conn.DO("SET", cart.CartID, string(serialized))
+}
 
 var (
 	ErrNotFound = errors.New("not found")
