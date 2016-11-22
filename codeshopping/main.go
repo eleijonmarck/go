@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/eleijonmarck/codeshopping/handlers/api"
 	"github.com/garyburd/redigo/redis"
 )
 
@@ -73,15 +74,15 @@ const (
 func main() {
 
 	// Setup repositories
-	// var (
-	// 	carts cart.Respository
-	// )
+	var (
+		carts cart.Respository
+	)
 	conn, err := redis.DialURL(defaultRedisDBUrl)
 	if err != nil {
 		// handle connection error
 	}
 	defer conn.Close()
-
+	carts, _ = redis.NewCartRepository(*defaultDBName, conn)
 	// creates a http.ServeMux, used to register handlers to execute in
 	// response to routes
 	mux := http.NewServeMux()
@@ -89,5 +90,7 @@ func main() {
 	// get the items of the database
 	mux.Handle("/products", handlers.GetAllItems(conn))
 
+	// apis
+	mux.Handle("/api/items", api.Items(&carts))
 	http.ListenAndServe(":8080", mux)
 }
