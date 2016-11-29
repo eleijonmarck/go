@@ -2,22 +2,24 @@ package api
 
 import (
 	"encoding/json"
+	"github.com/pborman/uuid"
 	"net/http"
 
+	"fmt"
 	"github.com/eleijonmarck/codeshopping/cart"
-	"github.com/pborman/uuid"
+	"strings"
 )
 
 // CreateItem will create a item in the store
-func CreateItem(cr *cartRepository) http.Handler {
+func CreateItem(cr cart.Repository) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		in := CartItem{}
+		in := cart.Cart{}
 		if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
-			w.WriteHeader()
+			w.WriteHeader(0)
 			w.Write([]byte(fmt.Sprintf(`{"error": "%s"}`, err.Error())))
 		}
 
-		in.ID = strings.Split(strings.ToUpper(uuid.New()), "-")[0]
+		in.CartID = strings.Split(strings.ToUpper(uuid.New()), "-")[0]
 		err := cr.Store(&in)
 		if err != nil {
 			//error handling

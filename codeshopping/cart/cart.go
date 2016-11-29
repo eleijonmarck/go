@@ -2,17 +2,18 @@ package cart
 
 import (
 	"github.com/pborman/uuid"
+	"strings"
 )
 
 // Cart is a collection of the items and how to store it
 type Cart struct {
-	Items map[string]*CartItem
-	CartID    string
+	Items  map[string]*CartItem
+	CartID string
 }
 
 // Add will add and item to the cart
 func (c *Cart) Add(id string, name string, price float64, q int, attrs map[string]interface{}) *CartItem {
-	c.items[id] = &CartItem{
+	c.Items[id] = &CartItem{
 		ID:         id,
 		Name:       name,
 		Price:      price,
@@ -20,16 +21,15 @@ func (c *Cart) Add(id string, name string, price float64, q int, attrs map[strin
 		Attributes: attrs,
 	}
 
-	c.storage.Save(c.items)
+	// add to database
 
-	return c.items[id]
+	return c.Items[id]
 }
 
 // Remove will remove an item from the existing cart if it exists
 func (c *Cart) Remove(id string) bool {
-	if _, exists := c.items[id]; exists {
-		delete(c.items, id)
-		c.storage.Save(c.items)
+	if _, exists := c.Items[id]; exists {
+		delete(c.Items, id)
 
 		return true
 	}
@@ -50,10 +50,12 @@ func (c *Cart) GetContent() map[string]*CartItem {
 	return c.Items
 }
 
+// New returns a new Cart
 func New(id string) *Cart {
-	return &Cart {
-		CartId : id,
-		Items : []map[string]*CartItem,
+	m := make(map[string]*CartItem)
+	return &Cart{
+		CartID: id,
+		Items:  m,
 	}
 }
 

@@ -1,13 +1,16 @@
 package main
 
 import (
+	"fmt"
 	"html/template"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"strconv"
 
-	"github.com/eleijonmarck/codeshopping/handlers/api"
+	"github.com/eleijonmarck/codeshopping/cart"
+	"github.com/eleijonmarck/codeshopping/handlers"
+	"github.com/eleijonmarck/codeshopping/redisdb"
 	"github.com/garyburd/redigo/redis"
 )
 
@@ -75,14 +78,16 @@ func main() {
 
 	// Setup repositories
 	var (
-		carts cart.Respository
+		carts cart.Repository
 	)
-	conn, err := redis.DialURL(defaultRedisDBUrl)
+	conn, err := redis.Dial("tcp", ":6379")
 	if err != nil {
 		// handle connection error
+		panic(err)
 	}
 	defer conn.Close()
-	carts, _ = redis.NewCartRepository(*defaultDBName, conn)
+	carts, _ = redisdb.NewCartRepository(defaultDBName, conn)
+
 	// creates a http.ServeMux, used to register handlers to execute in
 	// response to routes
 	mux := http.NewServeMux()
@@ -91,6 +96,24 @@ func main() {
 	mux.Handle("/products", handlers.GetAllItems(conn))
 
 	// apis
-	mux.Handle("/api/items", api.Items(&carts))
+	// mux.Handle("/api/items", api.Items(&carts))
+	fmt.Printf("starting server")
 	http.ListenAndServe(":8080", mux)
+
+	storeTestData(carts)
+}
+
+func storeTestData(r cart.Repository) {
+	test1 := cart.New("test1")
+	if err := r.Store(test1); err != nil {
+		panic(err)
+	}
+	fmt.Printf("stored test1")
+	log.Print("stored test1")
+
+	test2 := cart.New("test2")
+	if err := r.Store(test2); err != nil {
+		panic(err)
+	}
+	log.Print("stored test2")
 }

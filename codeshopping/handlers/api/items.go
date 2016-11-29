@@ -5,11 +5,12 @@ import (
 	"net/http"
 
 	"github.com/eleijonmarck/codeshopping/cart"
+	"log"
 )
 
-func Items(cr *cartRepository) http.Handler {
+func Items(cr cart.Repository) http.Handler {
 	type ret struct {
-		Items map[string]*CartItem `json:"items"`
+		Items map[string]*cart.CartItem `json:"items"`
 	}
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		key := r.URL.Query().Get("key")
@@ -18,12 +19,14 @@ func Items(cr *cartRepository) http.Handler {
 			return
 		}
 		defer r.Body.Close()
-		items, err := cr.FindAll()
+		items := cr.FindAll()
+
+		jsonitems, err := json.Marshal(items)
 		if err != nil {
-			//error handling
-			return
+			// error handling
 		}
+		log.Printf("api/items, called")
 		w.WriteHeader(http.StatusOK)
-		w.Wrire(json.UnMarshal(items))
+		w.Write(jsonitems)
 	})
 }
