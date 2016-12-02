@@ -17,12 +17,13 @@ func (r *cartRepository) Store(cart *cart.Cart) error {
 
 	// makes a copy of the struct that is pointed to by the pointer
 	c := r.conn
+	defer c.Close()
 	serialized, err := json.Marshal(&cart)
 	if err != nil {
 		// error handle
 		panic(err)
 	}
-	_, err2 := c.Do("SET", cart.CartID, string(serialized))
+	_, err2 := c.Do("APPEND", cart.CartID, string(serialized))
 	if err2 != nil {
 		panic(err)
 	}
@@ -36,6 +37,7 @@ func FromJson(jsonSrc string, v interface{}) error {
 
 func (r *cartRepository) Find(id string) (*cart.Cart, error) {
 	c := r.conn
+	defer c.Close()
 	key, err := redis.Strings(c.Do("GET", id))
 	keys := strings.Join(key[:], ",")
 	var carty cart.Cart
