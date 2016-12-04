@@ -4,6 +4,10 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
+	"os"
+	"strconv"
+	"time"
 
 	"github.com/eleijonmarck/codeshopping/cart"
 	"github.com/eleijonmarck/codeshopping/handlers"
@@ -12,10 +16,12 @@ import (
 )
 
 const (
-	defaultPort        = "8080"
-	defaultRedisDBUrl  = "127.0.0.1"
-	defaultRedisDBPort = "6379"
-	defaultDBName      = "codeshoppingDB"
+	defaultPort           = "8080"
+	defaultRedisURL       = "http://127.0.0.1:6379"
+	defaultRedisDBPort    = "6379"
+	defaultDBName         = "codeshoppingDB"
+	defaultRedisMaxIdle   = 3
+	defaultRedisMaxActive = 32
 )
 
 func main() {
@@ -24,20 +30,28 @@ func main() {
 	var (
 		carts cart.Repository
 	)
-	conn, err := redis.Dial("tcp", ":6379")
+
+	// Create the logger used by the server
+	logger := log.New(os.Stdout, "", 0)
+
+	// Create new Redis Pool
+	pool, err := newRedisPool(
+		envString("REDISCLOUD_URL", defaultRedisURL),
+		envInt("REDIS_MAX_IDLE", defaultRedisMaxIdle),
+		envInt("REDIS_MAX_ACTIVE", defaultRedisMaxActive),
+	)
 	if err != nil {
-		// handle connection error
-		panic(err)
+		logger.Fatal(err)
 	}
-	defer conn.Close()
-	carts, _ = redisdb.NewCartRepository(defaultDBName, conn)
+	defer pool.Close()
+	carts, _ = redisdb.NewCartRepository(defaultDBName, pool)
 
 	// creates a http.ServeMux, used to register handlers to execute in
 	// response to routes
 	mux := http.NewServeMux()
 
 	// get the items of the database
-	mux.Handle("/products/api/", handlers.GetAllItems(conn))
+	mux.Handle("/products/api/", handlers.GetAllItems(pool))
 
 	// test storage
 	storeTestData(carts)
@@ -48,6 +62,58 @@ func main() {
 	// mux.Handle("/products", handlers.ProductHandler())
 	http.ListenAndServe(":8080", mux)
 
+}
+
+func newRedisPool(addr string, maxIdle, maxActive int) (*redis.Pool, error) {
+	url, err := url.Parse(addr)
+	if err != nil {
+		return nil, err
+	}
+
+	return &redis.Pool{
+		MaxIdle:     maxIdle,
+		MaxActive:   maxActive,
+		Wait:        true,
+		IdleTimeout: 240 * time.Second,
+		Dial: func() (redis.Conn, error) {
+			c, err := redis.Dial("tcp", url.Host)
+			if err != nil {
+				return nil, err
+			}
+
+			if url.User != nil {
+				password, _ := url.User.Password()
+				_, err := c.Do("AUTH", password)
+				if err != nil {
+					c.Close()
+					return nil, err
+				}
+			}
+
+			return c, nil
+		},
+		TestOnBorrow: func(c redis.Conn, _ time.Time) error {
+			_, err := c.Do("PING")
+			return err
+		},
+	}, nil
+}
+
+func envString(env, fallback string) string {
+	e := os.Getenv(env)
+	if e == "" {
+		return fallback
+	}
+	return e
+}
+
+func envInt(env string, fallback int) int {
+	e := os.Getenv(env)
+	if e == "" {
+		return fallback
+	}
+	eInt, _ := strconv.Atoi(e)
+	return eInt
 }
 
 func storeTestData(r cart.Repository) {

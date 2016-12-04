@@ -10,21 +10,22 @@ import (
 	"strings"
 )
 
-func GetAllItems(db redis.Conn) http.Handler {
+func GetAllItems(pool *redis.Pool) http.Handler {
 	type ret struct {
-		Carts []string `json:"carts"`
+		Carts []byte `json:"carts"`
 	}
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		c := pool.Get()
 		key := r.URL.Query().Get("key")
 		if key == "" {
 			http.Error(w, "missing name in query string", http.StatusBadRequest)
 			return
 		}
-		keys, _ := redis.Strings(db.Do("KEYS", "test*"))
+		keys, _ := redis.Strings(c.Do("KEYS", "test*"))
 		fmt.Println(keys)
 		log.Println(keys)
-		val, err := redis.Strings(db.Do("GET", "test"))
+		val, err := redis.Bytes(c.Do("GET", "test1"))
 		if err != nil {
 			// err handling
 			panic(err)
