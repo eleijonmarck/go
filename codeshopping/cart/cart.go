@@ -69,5 +69,5 @@ func NewCartID() string {
 type Repository interface {
 	Store(cart *Cart) error
 	Find(id string) (*Cart, error)
-	FindAll() []*CartItem
+	FindAll() []*Cart
 }

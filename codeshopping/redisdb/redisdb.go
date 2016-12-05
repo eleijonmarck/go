@@ -30,10 +30,6 @@ func (r *cartRepository) Store(cart *cart.Cart) error {
 	return err
 }
 
-func FromJson(jsonSrc string, v interface{}) error {
-	return json.Unmarshal([]byte(jsonSrc), v)
-}
-
 func (r *cartRepository) Find(key string) (*cart.Cart, error) {
 	c := r.Pool.Get()
 	defer c.Close()
@@ -47,14 +43,15 @@ func (r *cartRepository) Find(key string) (*cart.Cart, error) {
 	return &carty, err
 }
 
-func (r *cartRepository) FindAll() []*cart.CartItem {
+func (r *cartRepository) FindAll() []*cart.Cart {
 	c := r.Pool.Get()
+	// TODO: return slices of bytes and return them
 	results, err := redis.Strings(c.Do("GET", "lol"))
 	fmt.Println(results)
 	if err != nil {
 		// handle error
 	}
-	return []*cart.CartItem{}
+	return []*cart.Cart{}
 }
 
 // NewCartRepository creates a repository for storage of the carts
