@@ -11,6 +11,7 @@ import (
 
 	"github.com/eleijonmarck/codeshopping/cart"
 	"github.com/eleijonmarck/codeshopping/handlers"
+	"github.com/eleijonmarck/codeshopping/handlers/api"
 	"github.com/eleijonmarck/codeshopping/redisdb"
 	"github.com/garyburd/redigo/redis"
 )
@@ -50,13 +51,14 @@ func main() {
 	// response to routes
 	mux := http.NewServeMux()
 
-	// get the items of the database
-	mux.Handle("/products/api/", handlers.GetAllItems(pool))
+	// api
+	mux.Handle("/carts/create", api.CreateCart(carts))
+	mux.Handle("/carts/get", api.GetACart(pool))
 
 	// test storage
 	storeTestData(carts)
 
-	// apis
+	// handlers
 	fmt.Printf("starting server")
 	mux.Handle("/", handlers.IndexHandler())
 	// mux.Handle("/products", handlers.ProductHandler())
