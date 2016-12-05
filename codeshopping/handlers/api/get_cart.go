@@ -4,42 +4,30 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/garyburd/redigo/redis"
-	"strings"
+	"fmt"
+	"github.com/eleijonmarck/codeshopping/cart"
 )
 
-func GetACart(pool *redis.Pool) http.Handler {
+func GetACart(cr cart.Repository) http.Handler {
 	type ret struct {
 		Carts []byte `json:"carts"`
 	}
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		c := pool.Get()
 		key := r.URL.Query().Get("get")
 		if key == "" {
 			http.Error(w, "missing name in query string", http.StatusBadRequest)
 			return
 		}
-		keys, _ := redis.Strings(c.Do("KEYS", "test*"))
-		val, err := redis.Bytes(c.Do("GET", "test1"))
+		fmt.Println(key)
+		foundCart, err := cr.Find(key)
 		if err != nil {
-			// err handling
-			panic(err)
+			w.Write([]byte(fmt.Sprintf(`{"error finding": "%s"}`, err.Error())))
 		}
-		if err := json.NewEncoder(w).Encode(ret{Carts: val}); err != nil {
-			// errrroror
+		byteCart, _ := json.Marshal(&foundCart)
+		if err2 := json.NewEncoder(w).Encode(ret{Carts: byteCart}); err2 != nil {
+			w.Write([]byte(fmt.Sprintf(`{"error marshal": "%s"}`, err2.Error())))
 		}
-		w.Write([]byte(strings.Join(keys, ", ")))
-		w.Write(val)
+		w.Write(byteCart)
 	})
-}
-
-func getJson(url string, target interface{}) error {
-	r, err := http.Get(url)
-	if err != nil {
-		return err
-	}
-	defer r.Body.Close()
-
-	return json.NewDecoder(r.Body).Decode(target)
 }

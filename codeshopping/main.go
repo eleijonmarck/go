@@ -53,7 +53,7 @@ func main() {
 
 	// api
 	mux.Handle("/carts/create", api.CreateCart(carts))
-	mux.Handle("/carts/get", api.GetACart(pool))
+	mux.Handle("/carts/get", api.GetACart(carts))
 
 	// test storage
 	storeTestData(carts)

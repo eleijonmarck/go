@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/eleijonmarck/codeshopping/cart"
 	"github.com/garyburd/redigo/redis"
-	"strings"
 )
 
 type cartRepository struct {
@@ -38,13 +37,14 @@ func FromJson(jsonSrc string, v interface{}) error {
 func (r *cartRepository) Find(key string) (*cart.Cart, error) {
 	c := r.Pool.Get()
 	defer c.Close()
-	values, err := redis.Strings(c.Do("GET", key))
-	value := strings.Join(values[:], ",")
-	var carty cart.Cart
-	if err := FromJson(value, &carty); err != nil {
-		return &cart.Cart{}, err
+	values, err := redis.Bytes(c.Do("GET", key))
+	carty := cart.Cart{}
+	err2 := json.Unmarshal(values, &carty)
+	if err2 != nil {
+		//
+		fmt.Println("lol")
 	}
-	return &cart.Cart{}, err
+	return &carty, err
 }
 
 func (r *cartRepository) FindAll() []*cart.CartItem {
