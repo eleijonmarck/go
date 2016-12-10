@@ -13,15 +13,11 @@ func CreateCart(cr cart.Repository) http.Handler {
 		Carts []byte `json:"carts"`
 	}
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		key := r.URL.Query().Get("set")
+		key := r.URL.Query().Get("key")
 		if key == "" {
 			http.Error(w, "missing name in query string", http.StatusBadRequest)
 			return
 		}
-		// if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
-		// 	w.WriteHeader(0)
-		// 	w.Write([]byte(fmt.Sprintf(`{"error": "%s"}`, err.Error())))
-		// }
 
 		newCart := cart.New(key)
 		err := cr.Store(newCart)
