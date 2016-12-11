@@ -47,14 +47,12 @@ func main() {
 	defer pool.Close()
 	carts, _ = redisdb.NewCartRepository(defaultDBName, pool)
 
-	// creates a http.ServeMux, used to register handlers to execute in
-	// response to routes
+	// creates a http.ServeMux, register handlers to execute in response to routes
 	mux := http.NewServeMux()
 
 	// api
+	mux.Handle("/carts/", api.GetCart(carts))
 	mux.Handle("/carts/create", api.CreateCart(carts))
-	mux.Handle("/carts/get", api.GetACart(carts))
-	mux.Handle("/carts/getall", api.GetAllCarts(carts))
 
 	// test storage
 	storeTestData(carts)
@@ -62,9 +60,7 @@ func main() {
 	// handlers
 	fmt.Printf("starting server")
 	mux.Handle("/", handlers.IndexHandler())
-	// mux.Handle("/products", handlers.ProductHandler())
 	http.ListenAndServe(":8080", mux)
-
 }
 
 func newRedisPool(addr string, maxIdle, maxActive int) (*redis.Pool, error) {

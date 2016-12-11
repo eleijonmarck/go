@@ -11,8 +11,8 @@ type Cart struct {
 	CartID string
 }
 
-// Add will add and item to the cart
-func (c *Cart) Add(id string, name string, price float64, q int, attrs map[string]interface{}) *CartItem {
+// AddItem will add and item to the cart
+func (c *Cart) AddItem(id string, name string, price float64, q int, attrs map[string]interface{}) *CartItem {
 	c.Items[id] = &CartItem{
 		ID:         id,
 		Name:       name,
@@ -27,7 +27,7 @@ func (c *Cart) Add(id string, name string, price float64, q int, attrs map[strin
 }
 
 // Remove will remove an item from the existing cart if it exists
-func (c *Cart) Remove(id string) bool {
+func (c *Cart) RemoveItem(id string) bool {
 	if _, exists := c.Items[id]; exists {
 		delete(c.Items, id)
 
@@ -43,11 +43,6 @@ func (c *Cart) IsEmpty() bool {
 		return false
 	}
 	return true
-}
-
-// GetContent for mutator approaches
-func (c *Cart) GetContent() map[string]*CartItem {
-	return c.Items
 }
 
 // New returns a new Cart

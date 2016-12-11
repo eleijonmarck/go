@@ -9,13 +9,11 @@ import (
 
 // CreateCart will create a item in the store
 func CreateCart(cr cart.Repository) http.Handler {
-	type res struct {
-		Carts []byte `json:"carts"`
-	}
+
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		key := r.URL.Query().Get("key")
 		if key == "" {
-			http.Error(w, "missing name in query string", http.StatusBadRequest)
+			http.Error(w, "missing key in query string", http.StatusBadRequest)
 			return
 		}
 
